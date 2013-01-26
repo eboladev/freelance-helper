@@ -19,7 +19,7 @@ private:
     float exchangeRate;
 private slots:
     void on_updateCurrency_clicked();
-    void exchangeRateUpdate(const float rate);
+    void updateExchangeRate(const float rate);
     void onAcceptChanges();
 
 private:

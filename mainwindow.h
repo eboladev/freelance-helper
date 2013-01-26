@@ -2,6 +2,8 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <QModelIndex>
+#include "employee.h"
 
 namespace Ui {
 class MainWindow;
@@ -19,13 +21,15 @@ private:
     void init();
 
     Ui::MainWindow *ui;
+    Employee employee;
 
 public slots:
     void openPreferencesDialog();
 
 private slots:
-    void exchangeRateUpdate(const float rate);
-
+    void setExchangeRate(const float rate);
+    void addFee(const QModelIndex feeIndex, const QModelIndex feeIndex1);
+    void setColumnNumber(const quint32 number);
 };
 
 #endif // MAINWINDOW_H

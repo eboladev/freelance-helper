@@ -5,9 +5,11 @@
 #include "currencyconverter.h"
 #include "maintablemodel.h"
 #include "QDate"
-#include "workermonth.h"
+#include "workerday.h"
 #include "QStandardItemModel"
 #include "QAbstractItemView"
+#include "employee.h"
+
 
 #ifdef QT_DEBUG
 #include <QtCore/QDebug>
@@ -25,7 +27,8 @@ void MainWindow::init()
 {
     connect(ui->actionExit, SIGNAL(triggered()), this, SLOT(close()));
     connect(ui->actionPreferences, SIGNAL(triggered()), this, SLOT(openPreferencesDialog()));
-    connect(CurrencyConverter::instance(), SIGNAL(exchangeRateUpdated(float)), this, SLOT(exchangeRateUpdate(float)));
+    connect(CurrencyConverter::instance(), SIGNAL(exchangeRateUpdated(float)), this, SLOT(setExchangeRate(float)));
+
 
     ui->exchangeRateLabel->setText(QString::number(CurrencyConverter::instance()->getUsdToRu()));
 
@@ -36,13 +39,16 @@ void MainWindow::init()
    // qDebug() << model.columnCount();
  //   ui->mainTable->setRowCount(3);
    // ui->mainTable->set
-    WorkerMonth workerMonth(QDate::currentDate());
+    WorkerDay workerMonth(QDate::currentDate());
     quint32 daysInMonth = workerMonth.getNumberOfDays();
-    QStandardItemModel *model = new QStandardItemModel(daysInMonth, 2, this);
-    model->setHeaderData(0, Qt::Horizontal, tr("Label"));
-    model->setHeaderData(1, Qt::Horizontal, tr("Quantity"));
+    QStandardItemModel *model = new QStandardItemModel(daysInMonth, employee.getMaxLength() + 1, this);
+   // model->setHeaderData(0, Qt::Horizontal, tr("Label"));
+  //  model->setHeaderData(1, Qt::Horizontal, tr("Quantity"));
 
      ui->mainTable->setModel(model);
+
+     connect(ui->mainTable->model(), SIGNAL(dataChanged(QModelIndex,QModelIndex)), this, SLOT(addFee(QModelIndex,QModelIndex)));
+     connect(&employee, SIGNAL(maxLengthChanged(quint32)), this, SLOT(setColumnNumber(quint32)));
      QModelIndex index = ui->mainTable->model()->index(QDate::currentDate().day(), 0);
     ui->mainTable->selectionModel()->select(index, QItemSelectionModel::Select);
     ui->mainTable->scrollTo(index,  QAbstractItemView::PositionAtTop);
@@ -59,7 +65,30 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
-void MainWindow::exchangeRateUpdate(const float rate)
+void MainWindow::setExchangeRate(const float rate)
 {
     ui->exchangeRateLabel->setText(QString::number(rate));
+}
+
+void MainWindow::addFee(const QModelIndex feeIndex, const QModelIndex feeIndex1)
+{
+    employee.setFee(QDate::currentDate(), feeIndex.column(), feeIndex.data().toString());
+}
+
+void MainWindow::setColumnNumber(const quint32 number)
+{
+    if(ui->mainTable->model()->columnCount() < number)
+    {
+        //move column
+    }
+    else
+    {
+        QList<QStandardItem*> items;
+     //   for(int i = 0; i < ui->mainTable->model()->rowCount(); i++)
+    //    {
+    //        QStandardItem* item = new QStandardItem("");
+     //       items.append(item);
+     //   }
+        ((QStandardItemModel*) ui->mainTable->model())->appendColumn(items);
+    }
 }

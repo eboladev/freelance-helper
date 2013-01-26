@@ -11,7 +11,7 @@ OptionsDialog::OptionsDialog(QWidget *parent) :
     ui->setupUi(this);
 
     connect(ui->updateCurrency, SIGNAL(clicked()), this, SLOT(on_updateCurrency_clicked()));
-    connect(CurrencyConverter::instance(), SIGNAL(exchangeRateUpdated(float)), this, SLOT(exchangeRateUpdate(float)));
+    connect(CurrencyConverter::instance(), SIGNAL(exchangeRateUpdated(float)), this, SLOT(updateExchangeRate(float)));
     connect(ui->buttonBox, SIGNAL(accepted()), this, SLOT(onAcceptChanges()));
 
     ui->rateLabel->setText(QString::number(CurrencyConverter::instance()->getUsdToRu()));
@@ -27,7 +27,7 @@ void OptionsDialog::on_updateCurrency_clicked()
     CurrencyConverter::instance()->update();
 }
 
-void OptionsDialog::exchangeRateUpdate(const float rate)
+void OptionsDialog::updateExchangeRate(const float rate)
 {
     ui->rateLabel->setText(QString::number(rate));
 }

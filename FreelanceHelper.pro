@@ -18,7 +18,9 @@ SOURCES += main.cpp\
     json.cpp \
     uniqueapp.cpp \
     maintablemodel.cpp \
-    workermonth.cpp
+    workerday.cpp \
+    employee.cpp \
+    fee.cpp
 
 HEADERS  += mainwindow.h \
     settings.h \
@@ -27,7 +29,9 @@ HEADERS  += mainwindow.h \
     json.h \
     uniqueapp.h \
     maintablemodel.h \
-    workermonth.h
+    workerday.h \
+    employee.h \
+    fee.h
 
 FORMS    += mainwindow.ui \
     optionsdialog.ui
