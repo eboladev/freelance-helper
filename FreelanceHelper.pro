@@ -17,10 +17,9 @@ SOURCES += main.cpp\
     optionsdialog.cpp \
     json.cpp \
     uniqueapp.cpp \
-    maintablemodel.cpp \
-    workerday.cpp \
     employee.cpp \
-    fee.cpp
+    fee.cpp \
+    feetableview.cpp
 
 HEADERS  += mainwindow.h \
     settings.h \
@@ -28,13 +27,14 @@ HEADERS  += mainwindow.h \
     optionsdialog.h \
     json.h \
     uniqueapp.h \
-    maintablemodel.h \
-    workerday.h \
     employee.h \
-    fee.h
+    fee.h \
+    feetableview.h
 
 FORMS    += mainwindow.ui \
     optionsdialog.ui
 
 INCLUDEPATH += d:/dev/boost/boost-current
 LIBS += -Ld:/dev/boost/boost-current/stage/lib
+
+OTHER_FILES +=

@@ -17,19 +17,26 @@ public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
     
-private:
-    void init();
-
-    Ui::MainWindow *ui;
-    Employee employee;
-
 public slots:
     void openPreferencesDialog();
 
+private:
+    void init();
+    void updateTable();
+    QModelIndex skipEmptyColumns(const QModelIndex &index);
+
+    Ui::MainWindow *ui;
+
+    Employee employee;
+    QDate showingDate;
+
+
 private slots:
+    void updateDay(const QDate &date);
     void setExchangeRate(const float rate);
-    void addFee(const QModelIndex feeIndex, const QModelIndex feeIndex1);
-    void setColumnNumber(const quint32 number);
+    void addFee(const QModelIndex &feeIndex, const QModelIndex);
+    void on_nextMonthBtn_clicked();
+    void on_previousMonthBtn_clicked();
 };
 
 #endif // MAINWINDOW_H

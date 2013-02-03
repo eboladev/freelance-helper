@@ -17,13 +17,12 @@ public:
     
 private:
     float exchangeRate;
+    Ui::OptionsDialog *ui;
+
 private slots:
     void on_updateCurrency_clicked();
     void updateExchangeRate(const float rate);
     void onAcceptChanges();
-
-private:
-    Ui::OptionsDialog *ui;
 };
 
 #endif // OPTIONSDIALOG_H

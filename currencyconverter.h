@@ -3,6 +3,7 @@
 
 #include <QtCore/QObject>
 #include "qglobal.h"
+#include "QSharedPointer"
 
 class CurrencyConverter : public QObject
 {
@@ -10,12 +11,12 @@ class CurrencyConverter : public QObject
     Q_OBJECT
 public:
     static CurrencyConverter *instance();
-    quint32 convertUsdToRub(const quint32 &value);
-    quint32 convertRubToUsd(const quint32 &value);
-    void store();
+    int convertUsdToRub(const int &value) const { return value * usdToRu; }
+    int convertRubToUsd(const int &value) const { return value / usdToRu; }
+    void store() const;
     void load();
     void setUsdToRu(const float &rate);
-    float getUsdToRu();
+    float getUsdToRu() const { return usdToRu; }
 
 private:
     float parseCurrency(const QByteArray &data);

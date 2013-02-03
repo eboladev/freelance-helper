@@ -3,9 +3,7 @@
 
 #include "optionsdialog.h"
 #include "currencyconverter.h"
-#include "maintablemodel.h"
 #include "QDate"
-#include "workerday.h"
 #include "QStandardItemModel"
 #include "QAbstractItemView"
 #include "employee.h"
@@ -28,36 +26,65 @@ void MainWindow::init()
     connect(ui->actionExit, SIGNAL(triggered()), this, SLOT(close()));
     connect(ui->actionPreferences, SIGNAL(triggered()), this, SLOT(openPreferencesDialog()));
     connect(CurrencyConverter::instance(), SIGNAL(exchangeRateUpdated(float)), this, SLOT(setExchangeRate(float)));
+    connect(&employee, SIGNAL(updateDay(QDate)), this, SLOT(updateDay(QDate)));
 
-
+    // set exchange rate
     ui->exchangeRateLabel->setText(QString::number(CurrencyConverter::instance()->getUsdToRu()));
 
- //   MainTableModel  model(0);
-  ////  model.setHeaderData(0, Qt::Horizontal, QObject::tr("ID"));
-  //  model.setHeaderData(1, Qt::Horizontal, QObject::tr("First name"));
- //   model.setHeaderData(2, Qt::Horizontal, QObject::tr("Last name"));
-   // qDebug() << model.columnCount();
- //   ui->mainTable->setRowCount(3);
-   // ui->mainTable->set
-    WorkerDay workerMonth(QDate::currentDate());
-    quint32 daysInMonth = workerMonth.getNumberOfDays();
-    QStandardItemModel *model = new QStandardItemModel(daysInMonth, employee.getMaxLength() + 1, this);
-   // model->setHeaderData(0, Qt::Horizontal, tr("Label"));
-  //  model->setHeaderData(1, Qt::Horizontal, tr("Quantity"));
+    // set model
+    showingDate = QDate::currentDate();
+    // TODO add maxColumnSizeFor each
+    QStandardItemModel *model = new QStandardItemModel(showingDate.daysInMonth(), 30, this);
+    ui->mainTable->setModel(model);
 
-     ui->mainTable->setModel(model);
+    // signal to model
+    connect(ui->mainTable->model(), SIGNAL(dataChanged(QModelIndex,QModelIndex)), this, SLOT(addFee(QModelIndex,QModelIndex)));
 
-     connect(ui->mainTable->model(), SIGNAL(dataChanged(QModelIndex,QModelIndex)), this, SLOT(addFee(QModelIndex,QModelIndex)));
-     connect(&employee, SIGNAL(maxLengthChanged(quint32)), this, SLOT(setColumnNumber(quint32)));
-     QModelIndex index = ui->mainTable->model()->index(QDate::currentDate().day(), 0);
-    ui->mainTable->selectionModel()->select(index, QItemSelectionModel::Select);
-    ui->mainTable->scrollTo(index,  QAbstractItemView::PositionAtTop);
+    // set selection index
+    QModelIndex index = ui->mainTable->model()->index(QDate::currentDate().day() - 1, 0);
+    ui->mainTable->setFocus();
+    ui->mainTable->setCurrentIndex(index);
+    ui->mainTable->scrollTo(index,  QAbstractItemView::PositionAtCenter);
 }
+
 
 void MainWindow::openPreferencesDialog()
 {
     OptionsDialog optionsDialog;
     optionsDialog.exec();
+}
+
+void MainWindow::updateDay(const QDate &date)
+{
+    QStandardItemModel* model = dynamic_cast<QStandardItemModel*>(ui->mainTable->model());
+
+    // get list
+    QSharedPointer<QList<Fee> > list = employee.getFeesForDay(date);
+    if(list.isNull())
+    {
+        return;
+    }
+
+    // fill row
+    Fee fee("");
+    int column = 0;
+    foreach(fee, *list )
+    {
+        QModelIndex index = model->index(date.day() - 1, column++);
+        bool oldState = model->blockSignals(true);
+        model->setData(index, fee.getString() );
+        model->blockSignals(oldState);
+    }
+
+    // clear last
+    QModelIndex index = model->index(date.day() - 1, column);
+
+    bool oldState = model->blockSignals(true);
+    model->setData(index, "" );
+    model->blockSignals(oldState);
+
+    // update sum
+    ui->sumLabel->setText(QString::number(employee.getSum(), 'f', 2));
 }
 
 MainWindow::~MainWindow()
@@ -70,25 +97,65 @@ void MainWindow::setExchangeRate(const float rate)
     ui->exchangeRateLabel->setText(QString::number(rate));
 }
 
-void MainWindow::addFee(const QModelIndex feeIndex, const QModelIndex feeIndex1)
+void MainWindow::addFee(const QModelIndex &feeIndex, const QModelIndex)
 {
-    employee.setFee(QDate::currentDate(), feeIndex.column(), feeIndex.data().toString());
+    QModelIndex targetIndex = skipEmptyColumns(feeIndex);
+    QDate targetDay(showingDate.year(), showingDate.month(), feeIndex.row() + 1);
+    employee.setFee(targetDay, targetIndex.column(), targetIndex.data().toString());
 }
 
-void MainWindow::setColumnNumber(const quint32 number)
+QModelIndex MainWindow::skipEmptyColumns(const QModelIndex &index)
 {
-    if(ui->mainTable->model()->columnCount() < number)
+    QStandardItemModel* model = dynamic_cast<QStandardItemModel*>(ui->mainTable->model());
+
+    for(int loopColumn = 0; loopColumn < index.column(); loopColumn++)
     {
-        //move column
+        QModelIndex loopIndex= model->index(index.row(), loopColumn);
+        if(model->data(loopIndex).isNull() || model->data(loopIndex).toString().trimmed().isEmpty())
+        {
+            QModelIndex loopCell = model->index(index.row(), loopColumn);
+            bool oldState = model->blockSignals(true);
+            model->setData(loopCell, model->data(index));
+            model->setData(index, "");
+            model->blockSignals(oldState);
+            return loopCell;
+        }
     }
-    else
+
+    return index;
+}
+
+void MainWindow::on_previousMonthBtn_clicked()
+{
+    showingDate = showingDate.addMonths(-1);
+    updateTable();
+}
+
+void MainWindow::on_nextMonthBtn_clicked()
+{
+    showingDate = showingDate.addMonths(1);
+    updateTable();
+}
+
+void MainWindow::updateTable()
+{
+    QStandardItemModel* model = dynamic_cast<QStandardItemModel*>(ui->mainTable->model());
+    // set month name
+    ui->changeMonthBtn->setText(QLocale::system().monthName(showingDate.month()) + " " + QString::number(showingDate.year()));
+    // reload table structure
+    int daysInMonth = showingDate.daysInMonth();
+    model->removeRows(0, model->rowCount());
+    model->setRowCount(daysInMonth);
+    // TODO add maxColumnSizeFor each
+    model->setColumnCount(30);
+
+    // reload table data from employee
+    for(int i = 0; i < model->rowCount(); i++)
     {
-        QList<QStandardItem*> items;
-     //   for(int i = 0; i < ui->mainTable->model()->rowCount(); i++)
-    //    {
-    //        QStandardItem* item = new QStandardItem("");
-     //       items.append(item);
-     //   }
-        ((QStandardItemModel*) ui->mainTable->model())->appendColumn(items);
+        QDate dateForRow(showingDate.year(), showingDate.month(), i + 1);
+        updateDay(dateForRow);
     }
 }
+
+
+

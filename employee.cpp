@@ -2,15 +2,15 @@
 
 Employee::Employee()
 {
-    maxLength = 0;
+    sum = 0;
 }
 
-bool Employee::containsFee(const QDate &date, const int &column)
+bool Employee::containsFee(const QDate &date, const int &column)  const
 {
     if(dayMap.contains(date))
     {
-        QList<Fee> *list = dayMap.value(date);
-        if( column < list->size())
+        QSharedPointer<QList<Fee> > list = dayMap.value(date);
+        if(false == list.isNull() && column < list->size())
         {
             return true;
         }
@@ -21,72 +21,41 @@ bool Employee::containsFee(const QDate &date, const int &column)
 void Employee::setFee(const QDate &date, const int &column, const QString &feeString)
 {
     Fee fee(feeString);
-    if(dayMap.contains(date))
+    if(containsFee(date, column))
     {
-        QList<Fee> *list = dayMap.value(date);
-        // TODO if fee is empty
-        // if <  than delete one list item and change maxsize!! else nothing to do
-        if(column < list->size())
+        QSharedPointer<QList<Fee> > list = dayMap.value(date);
+        if(false == fee.getString().isEmpty())
         {
-            if(feeString.trimmed() == "")
-            {
-                // while changing maxlength we must check all other ddays for maxsize in this month
-                // if there is row with same columns - just reload list for row
-                list->removeAt(column);
-                emit feeListReload();
-                return;
-            }
-            else
-            {
-
-            }
-
+            sum = sum - list->at(column).getAmountAsUsd();
             list->replace(column, fee);
-        }
-        else
+            sum = sum + fee.getAmountAsUsd();
+        } else
         {
-            // while changing maxlength we must check all other ddays for maxsize in this month
+            //calc sum
+            sum = sum - list->at(column).getAmountAsUsd();
 
-            list->append(fee);
-            if(list->size() > maxLength)
-            {
-                maxLength = list->size();
-                emit maxLengthChanged(maxLength);
-            }
+            list->removeAt(column);
         }
+        emit updateDay(date);
     }
     else
     {
-        // TODO if fee is empty return
-        QList<Fee> *list = new QList<Fee>();
+        QSharedPointer<QList<Fee> > list = dayMap.value(date);
+        if(list.isNull())
+        {
+           list = QSharedPointer<QList<Fee> >(new QList<Fee>);
+           dayMap.insert(date, list);
+        }
         list->append(fee);
-        if(list->size() > maxLength)
-        {
-            maxLength = list->size();
-            emit maxLengthChanged(maxLength);
-        }
-        dayMap.insert(date, list);
+        sum = sum + fee.getAmountAsUsd();
+
+        emit updateDay(date);
     }
+
 }
 
-QList<Fee>* Employee::getFeesForDay(const QDate &date)
+QSharedPointer<QList<Fee> > Employee::getFeesForDay(const QDate &date)  const
 {
-    if(dayMap.contains(date))
-    {
         return dayMap.value(date);
-    }
-    else
-    {
-        QList<Fee> *list = new QList<Fee>();
-        return list;
-        if(maxLength == 0)
-        {
-            maxLength++;
-        }
-    }
 }
 
-qint32 Employee::getMaxLength()
-{
-    return maxLength;
-}

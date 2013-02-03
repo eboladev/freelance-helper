@@ -23,22 +23,6 @@ CurrencyConverter *CurrencyConverter::instance()
 }
 
 /*
-  Get RUB from USD
-  */
-quint32 CurrencyConverter::convertUsdToRub(const quint32 &value)
-{
-    return value * usdToRu;
-}
-
-/*
-  Get USD from RUB
-  */
-quint32 CurrencyConverter::convertRubToUsd(const quint32 &value)
-{
-    return value/usdToRu;
-}
-
-/*
     Update exchange rate
   */
 void CurrencyConverter::update()
@@ -54,34 +38,6 @@ void CurrencyConverter::update()
     QNetworkReply *reply = manager.get(request);
     connect(reply, SIGNAL(finished()),
             this, SLOT(catchRequestReady()));
-}
-
-/*
-    Store data to settings
-  */
-void CurrencyConverter::store()
-{
-    Settings::instance()->setValue("rate", CurrencyConverter::instance()->usdToRu);
-    Settings::instance()->sync();
-}
-
-/*
-    Store data to settings
-  */
-void CurrencyConverter::load()
-{
-    CurrencyConverter::instance()->usdToRu = Settings::instance()->value("rate").toFloat();
-}
-
-void CurrencyConverter::setUsdToRu(const float &rate)
-{
-    usdToRu = rate;
-    emit exchangeRateUpdated(usdToRu);
-}
-
-float CurrencyConverter::getUsdToRu()
-{
-    return usdToRu;
 }
 
 /*
@@ -101,6 +57,29 @@ void CurrencyConverter::catchRequestReady()
 }
 
 /*
+    Store data to settings
+  */
+void CurrencyConverter::store() const
+{
+    Settings::instance()->setValue("rate", usdToRu);
+    Settings::instance()->sync();
+}
+
+/*
+    Store data to settings
+  */
+void CurrencyConverter::load()
+{
+    usdToRu = Settings::instance()->value("rate").toFloat();
+}
+
+void CurrencyConverter::setUsdToRu(const float &rate)
+{
+    usdToRu = rate;
+    emit exchangeRateUpdated(usdToRu);
+}
+
+/*
     Parse Json data
     Return exchange rate
   */
@@ -113,8 +92,10 @@ float CurrencyConverter::parseCurrency(const QByteArray &data)
     QVariantMap result = QtJson::parse(data, ok).toMap();
 
     if(!ok) {
-        //qDebug("An error occurred during parsing");
-        // TODO logger
+#ifdef QT_DEBUG
+        qDebug() << "Parse error!";
+#endif
+        return 0;
     }
 
     return result["rate"].toFloat();

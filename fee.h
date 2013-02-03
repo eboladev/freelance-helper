@@ -3,25 +3,24 @@
 
 #include "QtCore"
 
-
 class Fee
 {
-
     enum currency {
         USD, RUB
     };
 
 public:
     Fee(const QString &value);
-    quint32 getAmount();
-    currency getCurrency();
-
+    int getAmount() const;
+    currency getCurrency() const;
+    QString getString() const;
+    float getAmountAsUsd() const;
 
 private:
     void parseString();
-    QString enteredFee;
-    currency usedCurrency;
-    quint32 amount;
+    QString stringValue;
+    currency currencyValue;
+    int amount;
 };
 
 #endif // FEE_H
