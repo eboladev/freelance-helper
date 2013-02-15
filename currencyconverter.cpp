@@ -37,13 +37,22 @@ void CurrencyConverter::update()
     static QNetworkAccessManager manager;
     QNetworkReply *reply = manager.get(request);
     connect(reply, SIGNAL(finished()),
-            this, SLOT(catchRequestReady()));
+            this, SLOT(catchRequestReadyUsdToRub()));
+
+  /*  request.setUrl(QUrl("http://rate-exchange.appspot.com/currency?from=USD&to=RUB"));
+
+    *reply = manager.get(request);
+    connect(reply, SIGNAL(finished()),
+            this, SLOT(catchRequestReadyUsdToRub()));
+
+    request.setUrl(QUrl("http://rate-exchange.appspot.com/currency?from=USD&to=RUB"));
+
+    *reply = manager.get(request);
+    connect(reply, SIGNAL(finished()),
+            this, SLOT(catchRequestReadyUsdToRub()));*/
 }
 
-/*
-    Catch reply and handle it
-  */
-void CurrencyConverter::catchRequestReady()
+void CurrencyConverter::catchRequestReadyUsdToRub()
 {
     QNetworkReply *reply = qobject_cast<QNetworkReply*>(sender());
     if (reply) {
@@ -56,33 +65,54 @@ void CurrencyConverter::catchRequestReady()
     }
 }
 
-/*
-    Store data to settings
-  */
 void CurrencyConverter::store() const
 {
-    Settings::instance()->setValue("rate", usdToRu);
+    Settings::instance()->setValue("usdToRu", usdToRu);
+    Settings::instance()->setValue("usdToBy", usdToBy);
+    Settings::instance()->setValue("ruToBy", ruToBy);
     Settings::instance()->sync();
 }
 
-/*
-    Store data to settings
-  */
 void CurrencyConverter::load()
 {
-    usdToRu = Settings::instance()->value("rate").toFloat();
+    usdToRu = Settings::instance()->value("usdToRu").toFloat();
+    usdToBy = Settings::instance()->value("usdToBy").toFloat();
+    ruToBy = Settings::instance()->value("ruToBy").toFloat();
+
+    if(usdToRu == 0)
+    {
+        usdToRu = USD_TO_RUB_DEFAULT;
+    }
+
+    if(usdToBy == 0)
+    {
+        usdToBy = USD_TO_BYR_DEFAULT;
+    }
+
+    if(ruToBy == 0)
+    {
+        ruToBy = RUB_TO_BYR_DEFAULT;
+    }
 }
 
 void CurrencyConverter::setUsdToRu(const float &rate)
 {
     usdToRu = rate;
-    emit exchangeRateUpdated(usdToRu);
+    emit exchangeRateUpdated(USD, RUB, usdToRu);
 }
 
-/*
-    Parse Json data
-    Return exchange rate
-  */
+void CurrencyConverter::setUsdToBy(const float &rate)
+{
+    usdToBy = rate;
+    emit exchangeRateUpdated(USD, BYR, usdToBy);
+}
+
+void CurrencyConverter::setRuToBy(const float &rate)
+{
+    ruToBy = rate;
+    emit exchangeRateUpdated(RUB, BYR, ruToBy);
+}
+
 float CurrencyConverter::parseCurrency(const QByteArray &data)
 {
 #ifdef QT_DEBUG

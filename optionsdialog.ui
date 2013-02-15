@@ -29,42 +29,91 @@
     <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
    </property>
   </widget>
+  <widget class="QCheckBox" name="autoUpdate">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>120</y>
+     <width>82</width>
+     <height>17</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>auto update</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="updateCurrency">
+   <property name="geometry">
+    <rect>
+     <x>250</x>
+     <y>10</y>
+     <width>75</width>
+     <height>23</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Update</string>
+   </property>
+  </widget>
   <widget class="QWidget" name="gridLayoutWidget">
    <property name="geometry">
     <rect>
      <x>10</x>
      <y>10</y>
-     <width>361</width>
-     <height>81</height>
+     <width>222</width>
+     <height>99</height>
     </rect>
    </property>
    <layout class="QGridLayout" name="gridLayout">
-    <item row="1" column="0">
-     <widget class="QLabel" name="label">
-      <property name="text">
-       <string>USD to RUB</string>
-      </property>
-     </widget>
+    <item row="3" column="1">
+     <layout class="QHBoxLayout" name="horizontalLayout">
+      <item>
+       <widget class="QLabel" name="label_2">
+        <property name="text">
+         <string>USD to BYR</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLineEdit" name="usdToByrLabel"/>
+      </item>
+     </layout>
     </item>
-    <item row="1" column="1">
-     <widget class="QLineEdit" name="rateLabel"/>
+    <item row="2" column="1">
+     <layout class="QHBoxLayout" name="horizontalLayout_2">
+      <item>
+       <widget class="QLabel" name="label">
+        <property name="text">
+         <string>USD to RUB</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLineEdit" name="usdToRubLabel"/>
+      </item>
+     </layout>
     </item>
-    <item row="1" column="2">
-     <widget class="QPushButton" name="updateCurrency">
-      <property name="text">
-       <string>Update</string>
-      </property>
-     </widget>
-    </item>
-    <item row="2" column="0">
-     <widget class="QCheckBox" name="autoUpdate">
-      <property name="text">
-       <string>auto update</string>
-      </property>
-     </widget>
+    <item row="4" column="1">
+     <layout class="QHBoxLayout" name="horizontalLayout_3">
+      <item>
+       <widget class="QLabel" name="label_3">
+        <property name="text">
+         <string>RUB to BYR</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLineEdit" name="RubToByrLabel"/>
+      </item>
+     </layout>
     </item>
    </layout>
   </widget>
+  <zorder>buttonBox</zorder>
+  <zorder>autoUpdate</zorder>
+  <zorder>updateCurrency</zorder>
+  <zorder>gridLayoutWidget</zorder>
+  <zorder>gridLayoutWidget</zorder>
  </widget>
  <resources/>
  <connections>

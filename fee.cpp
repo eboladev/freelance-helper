@@ -56,7 +56,7 @@ int Fee::getAmount()  const
     return amount;
 }
 
-Fee::currency Fee::getCurrency()  const
+currency Fee::getCurrency()  const
 {
     return currencyValue;
 }
@@ -74,6 +74,6 @@ float Fee::getAmountAsUsd() const
     }
     else if(currencyValue == RUB)
     {
-        return (float) amount / (float) CurrencyConverter::instance()->getUsdToRu();
+        return CurrencyConverter::instance()->convertRubToUsd(amount);
     }
 }

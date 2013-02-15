@@ -33,7 +33,7 @@ private:
 
 private slots:
     void updateDay(const QDate &date);
-    void setExchangeRate(const float rate);
+    void setExchangeRate(const currency &from, const currency &to, const float rate);
     void addFee(const QModelIndex &feeIndex, const QModelIndex);
     void on_nextMonthBtn_clicked();
     void on_previousMonthBtn_clicked();

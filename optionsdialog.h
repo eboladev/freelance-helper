@@ -2,6 +2,7 @@
 #define OPTIONSDIALOG_H
 
 #include <QDialog>
+#include "currencyconverter.h"
 
 namespace Ui {
 class OptionsDialog;
@@ -21,7 +22,7 @@ private:
 
 private slots:
     void on_updateCurrency_clicked();
-    void updateExchangeRate(const float rate);
+    void updateExchangeRate(const currency &from, const currency &to, const float &rate);
     void onAcceptChanges();
 };
 

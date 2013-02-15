@@ -2,13 +2,10 @@
 #define FEE_H
 
 #include "QtCore"
+#include "currencyconverter.h"
 
 class Fee
 {
-    enum currency {
-        USD, RUB
-    };
-
 public:
     Fee(const QString &value);
     int getAmount() const;

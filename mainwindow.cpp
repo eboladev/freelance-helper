@@ -25,11 +25,13 @@ void MainWindow::init()
 {
     connect(ui->actionExit, SIGNAL(triggered()), this, SLOT(close()));
     connect(ui->actionPreferences, SIGNAL(triggered()), this, SLOT(openPreferencesDialog()));
-    connect(CurrencyConverter::instance(), SIGNAL(exchangeRateUpdated(float)), this, SLOT(setExchangeRate(float)));
+    connect(CurrencyConverter::instance(), SIGNAL(exchangeRateUpdated(currency, currency, float)), this, SLOT(setExchangeRate(currency, currency, float)));
     connect(&employee, SIGNAL(updateDay(QDate)), this, SLOT(updateDay(QDate)));
 
     // set exchange rate
-    ui->exchangeRateLabel->setText(QString::number(CurrencyConverter::instance()->getUsdToRu()));
+    ui->usdToRubLabel->setText(QString::number(CurrencyConverter::instance()->getUsdToRu()));
+    ui->usdToByrLabel->setText(QString::number(CurrencyConverter::instance()->getUsdToBy()));
+    ui->rubToByrLabel->setText(QString::number(CurrencyConverter::instance()->getRuToBy()));
 
     // set model
     showingDate = QDate::currentDate();
@@ -92,9 +94,26 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
-void MainWindow::setExchangeRate(const float rate)
+void MainWindow::setExchangeRate(const currency &from, const currency &to, const float rate)
 {
-    ui->exchangeRateLabel->setText(QString::number(rate));
+    if(from == USD && to == RUB)
+    {
+        ui->usdToRubLabel->setText(QString::number(rate));
+    }
+    else if(from == USD && to == BYR)
+    {
+        ui->usdToByrLabel->setText(QString::number(rate));
+    }
+    else if(from == RUB && to == BYR)
+    {
+        ui->rubToByrLabel->setText(QString::number(rate));
+    }
+    else
+    {
+#ifdef QT_DEBUG
+        qDebug() << "Unknown currency exchange rate: from: " + QString::number(from) + ", to: " + QString::number(to) + ", rate: " + rate;
+#endif
+    }
 }
 
 void MainWindow::addFee(const QModelIndex &feeIndex, const QModelIndex)
