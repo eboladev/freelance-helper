@@ -11,7 +11,7 @@ int main(int argc, char *argv[])
     QApplication a(argc, argv);
     // set app attributes
     a.setApplicationName("FreelanceHelper");
-    a.setOrganizationName("Sirozha");
+    a.setOrganizationName("ncuxer");
 
 
     if (!UniqueApplication::checkUniqueuness()) {

@@ -7,23 +7,24 @@
 #include <QString>
 #include <QMap>
 #include "fee.h"
-#include "QSharedPointer"
 
 class Employee : public QObject
 {
     Q_OBJECT
 public:
     Employee();
-    bool containsFee(const QDate &date, const int &column) const;
     void setFee(const QDate &date, const int &column, const QString &fee);
-    QSharedPointer<QList<Fee> > getFeesForDay(const QDate &date)  const;
+    QList<Fee>* getFeesForDay(const QDate &date)  const;
     float getSum() { return sum; }
+    void store();
+    void load();
 
 signals:
     void updateDay(QDate day);
 
 private:
-    QMap<QDate, QSharedPointer<QList<Fee> > > dayMap;
+    bool containsFee(const QDate &date, const int &column) const;
+    QMap<QDate, QList<Fee>* > dayMap;
     float sum;
 };
 

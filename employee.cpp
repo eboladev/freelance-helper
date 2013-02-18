@@ -9,8 +9,8 @@ bool Employee::containsFee(const QDate &date, const int &column)  const
 {
     if(dayMap.contains(date))
     {
-        QSharedPointer<QList<Fee> > list = dayMap.value(date);
-        if(false == list.isNull() && column < list->size())
+        QList<Fee>* list = dayMap.value(date);
+        if(column < list->size())
         {
             return true;
         }
@@ -23,28 +23,36 @@ void Employee::setFee(const QDate &date, const int &column, const QString &feeSt
     Fee fee(feeString);
     if(containsFee(date, column))
     {
-        QSharedPointer<QList<Fee> > list = dayMap.value(date);
+        QList<Fee>* list = dayMap.value(date);
         if(false == fee.getString().isEmpty())
         {
-            sum = sum - list->at(column).getAmountAsUsd();
+            sum = sum - list->at(column).getAmountAsUsd() + fee.getAmountAsUsd();
             list->replace(column, fee);
-            sum = sum + fee.getAmountAsUsd();
         } else
         {
-            //calc sum
             sum = sum - list->at(column).getAmountAsUsd();
-
             list->removeAt(column);
+            if(list->isEmpty())
+            {
+                delete list;
+                dayMap.remove(date);
+            }
         }
         emit updateDay(date);
     }
     else
     {
-        QSharedPointer<QList<Fee> > list = dayMap.value(date);
-        if(list.isNull())
+        if(fee.getString().isEmpty())
         {
-           list = QSharedPointer<QList<Fee> >(new QList<Fee>);
-           dayMap.insert(date, list);
+            emit updateDay(date);
+            return;
+        }
+
+        QList<Fee>* list = dayMap.value(date);
+        if(list == 0)
+        {
+            list = new QList<Fee>;
+            dayMap.insert(date, list);
         }
         list->append(fee);
         sum = sum + fee.getAmountAsUsd();
@@ -54,8 +62,17 @@ void Employee::setFee(const QDate &date, const int &column, const QString &feeSt
 
 }
 
-QSharedPointer<QList<Fee> > Employee::getFeesForDay(const QDate &date)  const
+QList<Fee>* Employee::getFeesForDay(const QDate &date)  const
 {
-        return dayMap.value(date);
+    return dayMap.value(date);
+}
+
+void Employee::store()
+{
+
+}
+
+void Employee::load()
+{
 }
 

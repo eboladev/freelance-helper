@@ -18,6 +18,11 @@ void Fee::parseString()
         currencyValue = USD;
         forceCurrency = true;
     }
+    else if (stringValue.contains("br"))
+    {
+        currencyValue = BYR;
+        forceCurrency = true;
+    }
     else if(stringValue.contains("r"))
     {
         currencyValue = RUB;
@@ -30,7 +35,11 @@ void Fee::parseString()
     amount = number.toInt();
 
     // auto mode
-    if(!forceCurrency && amount > 100)
+    if(!forceCurrency && amount > 10000)
+    {
+        currencyValue = BYR;
+    }
+    else if(!forceCurrency && amount > 100)
     {
         currencyValue = RUB;
     }
@@ -40,7 +49,7 @@ void Fee::parseString()
     }
 
     // generate string value
-    const char* const str_currency[]={"$", "r"};
+    const char* const str_currency[]={"$", "r", "br"};
     if(amount > 0)
     {
         stringValue = QString::number(amount) + " " + str_currency[currencyValue];
@@ -76,4 +85,10 @@ float Fee::getAmountAsUsd() const
     {
         return CurrencyConverter::instance()->convertRubToUsd(amount);
     }
+    else if(currencyValue == BYR)
+    {
+        return CurrencyConverter::instance()->convertByToUsd(amount);
+    }
+
+    return 0;
 }

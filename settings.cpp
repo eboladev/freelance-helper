@@ -4,9 +4,7 @@
 
 Settings::Settings()
 {
-    settings_ = new QSettings (QSettings::UserScope,
-                               qApp->organizationName(),
-                               qApp->applicationName(),
+    settings_ = new QSettings ("freelance_helper.ini",QSettings::IniFormat,
                                qApp);
 }
 

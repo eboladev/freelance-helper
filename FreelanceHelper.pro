@@ -18,8 +18,7 @@ SOURCES += main.cpp\
     json.cpp \
     uniqueapp.cpp \
     employee.cpp \
-    fee.cpp \
-    feetableview.cpp
+    fee.cpp
 
 HEADERS  += mainwindow.h \
     settings.h \
@@ -28,8 +27,7 @@ HEADERS  += mainwindow.h \
     json.h \
     uniqueapp.h \
     employee.h \
-    fee.h \
-    feetableview.h
+    fee.h
 
 FORMS    += mainwindow.ui \
     optionsdialog.ui

@@ -42,6 +42,7 @@ void MainWindow::init()
     // signal to model
     connect(ui->mainTable->model(), SIGNAL(dataChanged(QModelIndex,QModelIndex)), this, SLOT(addFee(QModelIndex,QModelIndex)));
 
+    updateTable();
     // set selection index
     QModelIndex index = ui->mainTable->model()->index(QDate::currentDate().day() - 1, 0);
     ui->mainTable->setFocus();
@@ -58,19 +59,22 @@ void MainWindow::openPreferencesDialog()
 
 void MainWindow::updateDay(const QDate &date)
 {
+    // update sum
+    ui->sumLabel->setText(QString::number(employee.getSum(), 'f', 2));
+
     QStandardItemModel* model = dynamic_cast<QStandardItemModel*>(ui->mainTable->model());
 
     // get list
-    QSharedPointer<QList<Fee> > list = employee.getFeesForDay(date);
-    if(list.isNull())
+    QList<Fee>* list = employee.getFeesForDay(date);
+    if(list == 0)
     {
         return;
     }
 
     // fill row
-    Fee fee("");
+    //Fee fee("");
     int column = 0;
-    foreach(fee, *list )
+    foreach(Fee fee, *list )
     {
         QModelIndex index = model->index(date.day() - 1, column++);
         bool oldState = model->blockSignals(true);
@@ -84,9 +88,6 @@ void MainWindow::updateDay(const QDate &date)
     bool oldState = model->blockSignals(true);
     model->setData(index, "" );
     model->blockSignals(oldState);
-
-    // update sum
-    ui->sumLabel->setText(QString::number(employee.getSum(), 'f', 2));
 }
 
 MainWindow::~MainWindow()
@@ -118,9 +119,22 @@ void MainWindow::setExchangeRate(const currency &from, const currency &to, const
 
 void MainWindow::addFee(const QModelIndex &feeIndex, const QModelIndex)
 {
+    // get first empty column
+    QStandardItemModel* model = dynamic_cast<QStandardItemModel*>(ui->mainTable->model());
     QModelIndex targetIndex = skipEmptyColumns(feeIndex);
+
+    // ask for source of fee
+    //QMenu menu;
+    //QAction actionFeeSource(this);
+    //actionFeeSource.setText("1312313");
+    //menu.addAction(&actionFeeSource);
+    //menu.setVisible(true);
+    // set fee value
     QDate targetDay(showingDate.year(), showingDate.month(), feeIndex.row() + 1);
-    employee.setFee(targetDay, targetIndex.column(), targetIndex.data().toString());
+    int column = targetIndex.column();
+    QString data = targetIndex.data().toString();
+    model->setData(targetIndex, "");
+    employee.setFee(targetDay, column, data);
 }
 
 QModelIndex MainWindow::skipEmptyColumns(const QModelIndex &index)
