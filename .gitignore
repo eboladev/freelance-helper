@@ -11,3 +11,10 @@
 *.lai
 *.la
 *.a
+
+
+*.pdb
+*.user
+debug/*
+Makefile*
+ui_*.h
