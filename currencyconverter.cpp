@@ -22,9 +22,36 @@ CurrencyConverter *CurrencyConverter::instance()
     return &instance_;
 }
 
-/*
-    Update exchange rate
-  */
+long CurrencyConverter::convert(const long &value, const currency &from, const currency &to) const
+{
+    if(from == USD && to == RUB)
+    {
+        return value * usdToRu;
+    }
+    if(from == USD && to == BYR)
+    {
+        return value * usdToBy;
+    }
+    if(from == RUB && to == BYR)
+    {
+        return value * ruToBy;
+    }
+    if(from == RUB && to == USD)
+    {
+        return value / usdToRu;
+    }
+    if(from == BYR && to == USD)
+    {
+        return value / usdToBy;
+    }
+    if(from == BYR && to == RUB)
+    {
+        return value / ruToBy;
+    }
+
+    return 0;
+}
+
 void CurrencyConverter::update()
 {
 #ifdef QT_DEBUG
@@ -38,18 +65,6 @@ void CurrencyConverter::update()
     QNetworkReply *reply = manager.get(request);
     connect(reply, SIGNAL(finished()),
             this, SLOT(catchRequestReadyUsdToRub()));
-
-  /*  request.setUrl(QUrl("http://rate-exchange.appspot.com/currency?from=USD&to=RUB"));
-
-    *reply = manager.get(request);
-    connect(reply, SIGNAL(finished()),
-            this, SLOT(catchRequestReadyUsdToRub()));
-
-    request.setUrl(QUrl("http://rate-exchange.appspot.com/currency?from=USD&to=RUB"));
-
-    *reply = manager.get(request);
-    connect(reply, SIGNAL(finished()),
-            this, SLOT(catchRequestReadyUsdToRub()));*/
 }
 
 void CurrencyConverter::catchRequestReadyUsdToRub()
@@ -75,9 +90,13 @@ void CurrencyConverter::store() const
 
 void CurrencyConverter::load()
 {
-    usdToRu = Settings::instance()->value("usdToRu").toFloat();
-    usdToBy = Settings::instance()->value("usdToBy").toFloat();
-    ruToBy = Settings::instance()->value("ruToBy").toFloat();
+    const int USD_TO_RUB_DEFAULT  = 30;
+    const int USD_TO_BYR_DEFAULT  = 8710;
+    const int RUB_TO_BYR_DEFAULT  = 288;
+
+    usdToRu = Settings::instance()->value("usdToRu").toInt();
+    usdToBy = Settings::instance()->value("usdToBy").toInt();
+    ruToBy = Settings::instance()->value("ruToBy").toInt();
 
     if(usdToRu == 0)
     {
@@ -95,25 +114,25 @@ void CurrencyConverter::load()
     }
 }
 
-void CurrencyConverter::setUsdToRu(const float &rate)
+void CurrencyConverter::setUsdToRu(const int &rate)
 {
     usdToRu = rate;
     emit exchangeRateUpdated(USD, RUB, usdToRu);
 }
 
-void CurrencyConverter::setUsdToBy(const float &rate)
+void CurrencyConverter::setUsdToBy(const int &rate)
 {
     usdToBy = rate;
     emit exchangeRateUpdated(USD, BYR, usdToBy);
 }
 
-void CurrencyConverter::setRuToBy(const float &rate)
+void CurrencyConverter::setRuToBy(const int &rate)
 {
     ruToBy = rate;
     emit exchangeRateUpdated(RUB, BYR, ruToBy);
 }
 
-float CurrencyConverter::parseCurrency(const QByteArray &data)
+int CurrencyConverter::parseCurrency(const QByteArray &data)
 {
 #ifdef QT_DEBUG
     qDebug() << data;
@@ -128,7 +147,7 @@ float CurrencyConverter::parseCurrency(const QByteArray &data)
         return 0;
     }
 
-    return result["rate"].toFloat();
+    return result["rate"].toInt();
 }
 
 

@@ -2,14 +2,13 @@
 
 Employee::Employee()
 {
-    sum = 0;
 }
 
 bool Employee::containsFee(const QDate &date, const int &column)  const
 {
     if(dayMap.contains(date))
     {
-        QList<Fee>* list = dayMap.value(date);
+        QList<Money>* list = dayMap.value(date);
         if(column < list->size())
         {
             return true;
@@ -20,17 +19,17 @@ bool Employee::containsFee(const QDate &date, const int &column)  const
 
 void Employee::setFee(const QDate &date, const int &column, const QString &feeString)
 {
-    Fee fee(feeString);
+    Money fee(feeString);
     if(containsFee(date, column))
     {
-        QList<Fee>* list = dayMap.value(date);
+        QList<Money>* list = dayMap.value(date);
         if(false == fee.getString().isEmpty())
         {
-            sum = sum - list->at(column).getAmountAsUsd() + fee.getAmountAsUsd();
+             sum.sub(list->at(column)).add(fee);
             list->replace(column, fee);
         } else
         {
-            sum = sum - list->at(column).getAmountAsUsd();
+            sum.sub(list->at(column));
             list->removeAt(column);
             if(list->isEmpty())
             {
@@ -48,21 +47,21 @@ void Employee::setFee(const QDate &date, const int &column, const QString &feeSt
             return;
         }
 
-        QList<Fee>* list = dayMap.value(date);
+        QList<Money>* list = dayMap.value(date);
         if(list == 0)
         {
-            list = new QList<Fee>;
+            list = new QList<Money>;
             dayMap.insert(date, list);
         }
         list->append(fee);
-        sum = sum + fee.getAmountAsUsd();
+        sum.add(fee);
 
         emit updateDay(date);
     }
 
 }
 
-QList<Fee>* Employee::getFeesForDay(const QDate &date)  const
+QList<Money>* Employee::getFeesForDay(const QDate &date)  const
 {
     return dayMap.value(date);
 }

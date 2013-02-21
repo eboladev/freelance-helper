@@ -1,17 +1,165 @@
-#include "fee.h"
+#include "money.h"
 #include "currencyconverter.h"
 
-Fee::Fee(const QString &value)
+Money::Money()
 {
-    stringValue = value;
+    amountUsCents = 0;
+    amountRuCopeck = 0;
+    amountByr = 0;
     currencyValue = USD;
-    amount = 0;
+    stringValue = "";
+}
+
+Money::Money(const QString &value)
+{
+    amountUsCents = 0;
+    amountRuCopeck = 0;
+    amountByr = 0;
+    currencyValue = USD;
+    stringValue = value;
     parseString();
 }
 
-void Fee::parseString()
+void Money::parseString()
 {
-    // parse currency
+    determineCurrency();
+
+    // parse digits
+    QRegExp regExp("(?!\\d)");
+    QString number = stringValue.replace(regExp, "");
+    float amount = number.toFloat();
+
+    // generate string value
+    if(amount > 0)
+    {
+        formatAsReadable(amount);
+    }
+    else
+    {
+        stringValue = "";
+    }
+}
+
+currency Money::getCurrency()  const
+{
+    return currencyValue;
+}
+
+QString Money::getString() const
+{
+    return stringValue;
+}
+
+Money& Money::add(const Money &money)
+{
+    amountUsCents += money.amountUsCents;
+    amountRuCopeck += money.amountRuCopeck;
+    amountByr += money.amountByr;
+    regenerateStringValue();
+    return *this;
+}
+
+Money& Money::sub(const Money &money)
+{
+    amountUsCents -= money.amountUsCents;
+    amountRuCopeck -= money.amountRuCopeck;
+    amountByr -= money.amountByr;
+    regenerateStringValue();
+    return *this;
+}
+
+long Money::getAmountAsUsd() const
+{
+    if(currencyValue == USD)
+    {
+        return amountUsCents;
+    }
+    else if(currencyValue == RUB)
+    {
+        return CurrencyConverter::instance()->convert(amountRuCopeck, RUB, USD);
+    }
+    else if(currencyValue == BYR)
+    {
+        return CurrencyConverter::instance()->convert(amountByr, BYR, USD);
+    }
+
+    return 0;
+}
+
+void Money::formatAsReadable(const float &amount)
+{
+    // prepare data
+    if(currencyValue == USD)
+    {
+        amountUsCents = amount * 100;
+        amountRuCopeck = CurrencyConverter::instance()->convert(amountUsCents, USD, RUB);
+        amountByr = CurrencyConverter::instance()->convert(amountUsCents, USD, BYR);
+    } else if (currencyValue == RUB)
+    {
+        amountRuCopeck = amount * 100;
+        amountUsCents = CurrencyConverter::instance()->convert(amountRuCopeck, RUB, USD);
+        amountByr = CurrencyConverter::instance()->convert(amountRuCopeck, RUB, BYR);
+    }else if(currencyValue == BYR)
+    {
+        amountByr = amount;
+        amountRuCopeck = CurrencyConverter::instance()->convert(amountByr, BYR, RUB);
+        amountUsCents = CurrencyConverter::instance()->convert(amountByr, BYR, USD);
+    }
+
+    regenerateStringValue();
+}
+
+void Money::regenerateStringValue()
+{
+    // create string value
+    if(currencyValue == USD)
+    {
+        if(amountUsCents > 0)
+        {
+            stringValue = QString::number(amountUsCents / 100);
+            long cent = amountUsCents % 100;
+            if(cent > 0)
+            {
+                stringValue += "." + QString::number(cent);
+            }
+            stringValue += " $";
+        }
+        else
+        {
+            stringValue = "";
+        }
+    } else if (currencyValue == RUB)
+    {
+        if(amountRuCopeck > 0)
+        {
+            stringValue = QString::number(amountRuCopeck / 100);
+            long cent = amountRuCopeck % 100;
+            if(cent > 0)
+            {
+                stringValue += "." + QString::number(cent);
+            }
+            stringValue += " r";
+        }
+        else
+        {
+            stringValue = "";
+        }
+    }else if(currencyValue == BYR)
+    {
+        if(amountByr > 0)
+        {
+            stringValue = QString::number(amountByr) + " br";
+        }
+        else
+        {
+            stringValue = "";
+        }
+    }
+}
+
+void Money::determineCurrency()
+{
+    // parse currency if it exists in the string
     bool forceCurrency = false;
     if(stringValue.contains("$"))
     {
@@ -29,66 +177,24 @@ void Fee::parseString()
         forceCurrency = true;
     }
 
-    // parse digits
-    QRegExp regExp("\\D");
-    QString number = stringValue.replace(regExp, "");
-    amount = number.toInt();
+    QRegExp regExp("?!\\d|.|,");
+    float amount  = stringValue.replace(regExp, "").toFloat();
 
-    // auto mode
-    if(!forceCurrency && amount > 10000)
+    // auto currency detection if there is no string value
+    if(!forceCurrency)
     {
-        currencyValue = BYR;
-    }
-    else if(!forceCurrency && amount > 100)
-    {
-        currencyValue = RUB;
-    }
-    else if(!forceCurrency && amount > 0)
-    {
-        currencyValue = USD;
-    }
-
-    // generate string value
-    const char* const str_currency[]={"$", "r", "br"};
-    if(amount > 0)
-    {
-        stringValue = QString::number(amount) + " " + str_currency[currencyValue];
-    }
-    else
-    {
-        stringValue = "";
-    }
-}
-
-int Fee::getAmount()  const
-{
-    return amount;
-}
-
-currency Fee::getCurrency()  const
-{
-    return currencyValue;
-}
-
-QString Fee::getString() const
-{
-    return stringValue;
-}
-
-float Fee::getAmountAsUsd() const
-{
-    if(currencyValue == USD)
-    {
-        return amount;
-    }
-    else if(currencyValue == RUB)
-    {
-        return CurrencyConverter::instance()->convertRubToUsd(amount);
-    }
-    else if(currencyValue == BYR)
-    {
-        return CurrencyConverter::instance()->convertByToUsd(amount);
+        if(amount > 10000)
+        {
+            currencyValue = BYR;
+        }
+        else if(amount > 100)
+        {
+            currencyValue = RUB;
+        }
+        else
+        {
+            currencyValue = USD;
+        }
     }
 
-    return 0;
 }

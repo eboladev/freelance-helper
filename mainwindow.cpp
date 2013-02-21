@@ -60,12 +60,12 @@ void MainWindow::openPreferencesDialog()
 void MainWindow::updateDay(const QDate &date)
 {
     // update sum
-    ui->sumLabel->setText(QString::number(employee.getSum(), 'f', 2));
+    ui->sumLabel->setText(employee.getSum().getString());
 
     QStandardItemModel* model = dynamic_cast<QStandardItemModel*>(ui->mainTable->model());
 
     // get list
-    QList<Fee>* list = employee.getFeesForDay(date);
+    QList<Money>* list = employee.getFeesForDay(date);
     if(list == 0)
     {
         return;
@@ -74,7 +74,7 @@ void MainWindow::updateDay(const QDate &date)
     // fill row
     //Fee fee("");
     int column = 0;
-    foreach(Fee fee, *list )
+    foreach(Money fee, *list )
     {
         QModelIndex index = model->index(date.day() - 1, column++);
         bool oldState = model->blockSignals(true);

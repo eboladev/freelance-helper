@@ -6,7 +6,7 @@
 #include <QDate>
 #include <QString>
 #include <QMap>
-#include "fee.h"
+#include "money.h"
 
 class Employee : public QObject
 {
@@ -14,8 +14,8 @@ class Employee : public QObject
 public:
     Employee();
     void setFee(const QDate &date, const int &column, const QString &fee);
-    QList<Fee>* getFeesForDay(const QDate &date)  const;
-    float getSum() { return sum; }
+    QList<Money>* getFeesForDay(const QDate &date)  const;
+    Money getSum() { return sum; }
     void store();
     void load();
 
@@ -24,8 +24,8 @@ signals:
 
 private:
     bool containsFee(const QDate &date, const int &column) const;
-    QMap<QDate, QList<Fee>* > dayMap;
-    float sum;
+    QMap<QDate, QList<Money>* > dayMap;
+    Money sum;
 };
 
 #endif // EMPLOYEE_H

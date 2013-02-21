@@ -16,43 +16,33 @@ class CurrencyConverter : public QObject
     Q_OBJECT
 public:
     static CurrencyConverter *instance();
-    float convertUsdToRub(const int &value) const { return (float) value * (float) usdToRu; }
-    float convertRubToUsd(const int &value) const { return (float) value / (float) usdToRu; }
-    float convertUsdToBy(const int &value) const { return (float) value * (float) usdToBy; }
-    float convertByToUsd(const int &value) const { return (float) value / (float) usdToBy; }
-    float convertRubToBy(const int &value) const { return (float) value * (float) ruToBy; }
-    float convertByToRub(const int &value) const { return (float) value / (float) ruToBy; }
+    long convert(const long &value, const currency &from, const currency &to) const;
     void store() const;
     void load();
-    void setUsdToRu(const float &rate);
-    float getUsdToRu() const { return usdToRu; }
+    void setUsdToRu(const int &rate);
+    int getUsdToRu() const { return usdToRu; }
 
-    void setUsdToBy(const float &rate);
-    float getUsdToBy() const { return usdToBy; }
+    void setUsdToBy(const int &rate);
+    int getUsdToBy() const { return usdToBy; }
 
-    void setRuToBy(const float &rate);
-    float getRuToBy() const { return ruToBy; }
+    void setRuToBy(const int &rate);
+    int getRuToBy() const { return ruToBy; }
 
 private:
-    float parseCurrency(const QByteArray &data);
+    int parseCurrency(const QByteArray &data);
 
-    float usdToRu;
-    float usdToBy;
-    float ruToBy;
-    static const int USD_TO_RUB_DEFAULT  = 30;
-    static const int USD_TO_BYR_DEFAULT  = 8710;
-    static const int RUB_TO_BYR_DEFAULT  = 288;
+    int usdToRu;
+    int usdToBy;
+    int ruToBy;
 
 signals:
-    void exchangeRateUpdated(const currency &from,  const currency &to, const float &rate);
+    void exchangeRateUpdated(const currency &from,  const currency &to, const int &rate);
 
 public slots:
     void update();
 
 private slots:
     void catchRequestReadyUsdToRub();
-/*    void catchRequestReadyUsdToBy();
-    void catchRequestReadyRuToBy();*/
 };
 
 #endif // CURRENCYCONVERTER_H

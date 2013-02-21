@@ -1,23 +1,30 @@
-#ifndef FEE_H
-#define FEE_H
+#ifndef MONEY_H
+#define MONEY_H
 
 #include "QtCore"
 #include "currencyconverter.h"
 
-class Fee
+class Money
 {
 public:
-    Fee(const QString &value);
-    int getAmount() const;
+    Money();
+    Money(const QString &value);
     currency getCurrency() const;
+    long getAmountAsUsd() const;
     QString getString() const;
-    float getAmountAsUsd() const;
+    Money& add(const Money &money);
+    Money& sub(const Money &money);
 
 private:
     void parseString();
-    QString stringValue;
-    currency currencyValue;
-    int amount;
-};
+    void determineCurrency();
+    void formatAsReadable(const float &amount);
+    void regenerateStringValue();
 
-#endif // FEE_H
+    long amountUsCents;
+    long amountRuCopeck;
+    long amountByr;
+    currency currencyValue;
+    QString stringValue;
+};
+#endif // MONEY_H
